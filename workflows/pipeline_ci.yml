@@ -1,0 +1,14 @@
+name: pipeline-ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run one-command demo
+        run: |
+          make demo
