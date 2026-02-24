@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Data / outputs
+data/
+outputs/*.md
+outputs/*.csv
+outputs/*.json
+outputs/*.log
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+# OS/editor
+.DS_Store
+.vscode/

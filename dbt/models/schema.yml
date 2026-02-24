@@ -1,0 +1,74 @@
+version: 2
+
+models:
+  - name: stg_events
+    description: "Parsed raw events with JSON properties extracted into typed columns."
+    columns:
+      - name: event_id
+        tests: [not_null, unique]
+      - name: event_ts
+        tests: [not_null]
+      - name: user_id
+        tests: [not_null]
+      - name: session_id
+        tests: [not_null]
+      - name: event_name
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['app_open','signup_started','signup_completed','product_view','add_to_cart','checkout_started','purchase_completed']
+      - name: variant
+        tests:
+          - accepted_values:
+              values: ['control','treatment']
+              quote: true
+              config:
+                where: "variant is not null"
+
+    tests:
+      - expression_is_true:
+          expression: "event_ts <= now() + interval '5 minutes'"
+
+  - name: stg_users
+    description: "User-level attributes derived from events (first seen, signup time, variant)."
+    columns:
+      - name: user_id
+        tests: [not_null, unique]
+      - name: first_event_ts
+        tests: [not_null]
+      - name: variant
+        tests:
+          - accepted_values:
+              values: ['control','treatment']
+              quote: true
+              config:
+                where: "variant is not null"
+
+  - name: fct_orders
+    description: "Order-level facts from purchase_completed events."
+    columns:
+      - name: order_id
+        tests: [not_null, unique]
+      - name: user_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_users')
+              field: user_id
+      - name: revenue
+        tests:
+          - not_null
+          - expression_is_true:
+              expression: "revenue >= 0"
+      - name: items
+        tests:
+          - expression_is_true:
+              expression: "items is null or items > 0"
+
+  - name: mart_conversion_daily
+    description: "Daily checkout-to-purchase conversion rate (within 24h) by experiment variant."
+    columns:
+      - name: checkout_to_purchase_rate_24h
+        tests:
+          - expression_is_true:
+              expression: "checkout_to_purchase_rate_24h is null or (checkout_to_purchase_rate_24h >= 0 and checkout_to_purchase_rate_24h <= 1)"

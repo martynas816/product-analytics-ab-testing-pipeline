@@ -1,0 +1,27 @@
+name: product_analytics
+version: "1.0.0"
+config-version: 2
+
+profile: product_analytics
+
+model-paths: ["models"]
+analysis-paths: ["analysis"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  product_analytics:
+    +materialized: view
+    staging:
+      +schema: staging
+      +materialized: view
+    facts:
+      +schema: analytics
+      +materialized: table
+    marts:
+      +schema: analytics
+      +materialized: table
