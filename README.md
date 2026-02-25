@@ -62,7 +62,3 @@ Synthetic events for an e-commerce style product:
 - Start with `outputs/ab_test_decision.md`
 - Then open `spec/event_tracking.md`
 - Then look at `dbt/models/` and `dbt/models/schema.yml` for tests
-
-## Notes
-- The dataset is generated to be deterministic (seeded) so results are reproducible.
-- The project is intentionally “small but real”: it’s not a toy notebook - it’s a runnable pipeline with checks.
