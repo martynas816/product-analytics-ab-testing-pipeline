@@ -1,4 +1,4 @@
-# Product Analytics — A/B Testing Pipeline (Postgres + dbt + Prefect)
+# Product Analytics - A/B Testing Pipeline (Postgres + dbt + Prefect)
 
 A small but **production-style** product analytics project that proves:
 - **Tracking standards** (event taxonomy, properties, “bad vs good” patterns)
