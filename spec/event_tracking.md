@@ -6,7 +6,7 @@ This spec defines **what to track**, **how to name events**, and **how to keep t
 
 ## Principles (Ruby Labs-style)
 1. **Stable names, stable meaning**  
-   If you change meaning, create a *new* event name (`purchase_completed_v2`) or a new property.
+When meaning changes, create a new event name and keep the old one for backwards compatibility.
 2. **Consistent property keys**  
    Use snake_case. Prefer enums over free text.
 3. **Event-level ownership**  
@@ -19,12 +19,12 @@ This spec defines **what to track**, **how to name events**, and **how to keep t
 ## Naming rules
 **Format:** `noun_verb` or `object_action`, lower snake_case.
 
-✅ Good:
+ Good:
 - `signup_completed`
 - `checkout_started`
 - `purchase_completed`
 
-❌ Bad:
+ Bad:
 - `SignupComplete` (mixed case)
 - `purchase` (ambiguous)
 - `clicked_button` (UI-specific and unstable)
@@ -129,4 +129,4 @@ Why good:
   - date
   - owner
 
-Downstream rule: if you can’t explain the KPI from this spec, the KPI is not production-ready.
+Downstream rule: if the KPI cannot be explained from this spec, instrumentation or definitions are incomplete.

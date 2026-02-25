@@ -48,16 +48,34 @@ def load_events() -> int:
 
 @task
 def dbt_build() -> dict:
-    # Use dbt inside container; profiles dir is set via DBT_PROFILES_DIR
-    cmd = ["dbt", "build", "--project-dir", "dbt", "--profiles-dir", "dbt"]
-    proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
-    return {
+    """Run `dbt build` and surface logs on failure."""
+
+    project_dir = "/app/dbt"
+    profiles_dir = "/app/dbt"
+    cmd = ["dbt", "build", "--project-dir", project_dir, "--profiles-dir", profiles_dir]
+
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+
+    state = {
         "command": " ".join(cmd),
         "stdout_tail": (proc.stdout or "")[-4000:],
         "stderr_tail": (proc.stderr or "")[-4000:],
         "returncode": proc.returncode,
     }
 
+    if proc.returncode != 0:
+        # Raise with tail logs so Docker / Prefect logs show the real dbt error.
+        raise RuntimeError(
+            "dbt build failed\n"
+            f"command: {state['command']}\n"
+            f"returncode: {state['returncode']}\n"
+            "--- dbt stderr (tail) ---\n"
+            f"{state['stderr_tail']}\n"
+            "--- dbt stdout (tail) ---\n"
+            f"{state['stdout_tail']}\n"
+        )
+
+    return state
 
 @task
 def run_monitors(run_id: str) -> dict:

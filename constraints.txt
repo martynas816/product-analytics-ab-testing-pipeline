@@ -1,0 +1,5 @@
+# Prefect 2.16.x expects Pydantic v1
+pydantic<2.0.0
+
+# Prefect 2.16.x is compatible with griffe < 1
+griffe<1.0.0

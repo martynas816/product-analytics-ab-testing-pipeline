@@ -30,7 +30,11 @@ def generate_events(
     random.seed(seed)
 
     end = _now_utc()
-    start = end - timedelta(days=n_days)
+    # Keep generated timestamps safely behind database NOW() to avoid clock skew and long-session spillover.
+    hard_end = end - timedelta(minutes=10)
+    start = hard_end - timedelta(days=n_days)
+    max_event_lag = timedelta(hours=2, minutes=30)
+    latest_session_start = hard_end - max_event_lag
 
     # Assign experiment variant at user level
     user_ids = [f"u_{i:06d}" for i in range(1, n_users + 1)]
@@ -39,6 +43,7 @@ def generate_events(
     rows = []
 
     def add_event(event_ts, user_id, session_id, event_name, props, exp_key=experiment_key, variant=None):
+        event_ts = min(event_ts, hard_end)
         rows.append({
             "event_id": str(uuid.uuid4()),
             "event_ts": event_ts.isoformat(),
@@ -64,8 +69,8 @@ def generate_events(
         for s in range(n_sessions):
             # Session start time jittered forward from first_seen
             session_ts = first_seen + timedelta(days=random.random() * (n_days - 1), minutes=random.random() * 1440)
-            if session_ts > end:
-                session_ts = end - timedelta(minutes=random.random() * 60)
+            if session_ts > latest_session_start:
+                session_ts = latest_session_start - timedelta(minutes=random.random() * 60)
 
             session_id = f"s_{uuid.uuid4().hex[:10]}"
 

@@ -1,4 +1,4 @@
-# Product Analytics - A/B Testing Pipeline (Postgres + dbt + Prefect)
+# Product Analytics — A/B Testing Pipeline (Postgres + dbt + Prefect)
 
 A small but **production-style** product analytics project that proves:
 - **Tracking standards** (event taxonomy, properties, “bad vs good” patterns)
@@ -10,9 +10,22 @@ A small but **production-style** product analytics project that proves:
 ## One-command demo
 Requirements: Docker Desktop
 
+**Windows (PowerShell):**
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\demo.ps1
+```
+
+**macOS/Linux:**
 ```bash
 make demo
 ```
+
+*No `make` installed?* You can also run:
+```bash
+docker compose down -v
+docker compose up --build --abort-on-container-exit
+```
+
 
 This will:
 1) Generate synthetic product events (with an A/B experiment)
@@ -50,3 +63,6 @@ Synthetic events for an e-commerce style product:
 - Then open `spec/event_tracking.md`
 - Then look at `dbt/models/` and `dbt/models/schema.yml` for tests
 
+## Notes
+- The dataset is generated to be deterministic (seeded) so results are reproducible.
+- The project is intentionally “small but real”: it’s not a toy notebook - it’s a runnable pipeline with checks.
