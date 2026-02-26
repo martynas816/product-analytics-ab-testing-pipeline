@@ -10,6 +10,7 @@ import pandas as pd
 FRESHNESS_THRESHOLD_HOURS = float(os.getenv("FRESHNESS_THRESHOLD_HOURS", "24"))
 Z_THRESHOLD = float(os.getenv("ANOMALY_Z_THRESHOLD", "3.0"))
 
+
 class MonitoringReport(TypedDict):
     freshness: dict[str, Any]
     anomaly: list[dict[str, Any]]
@@ -34,6 +35,7 @@ def connect():
         password=env("POSTGRES_PASSWORD", "analytics"),
     )
 
+
 def insert_alert(cur, run_id, alert_type, severity, message, details):
     cur.execute(
         """
@@ -51,10 +53,12 @@ def insert_alert(cur, run_id, alert_type, severity, message, details):
         ),
     )
 
+
 def format_freshness_alert_message(lag_hours: float | None, threshold_hours: float) -> str:
     if lag_hours is None:
         return f"Freshness FAIL: no events found in raw.events (threshold {threshold_hours}h)"
     return f"Freshness FAIL: latest event is {lag_hours:.1f}h old (threshold {threshold_hours}h)"
+
 
 def run_monitors(run_id: str) -> MonitoringReport:
     freshness_q = (
@@ -148,6 +152,7 @@ def run_monitors(run_id: str) -> MonitoringReport:
     conn.close()
     return report
 
+
 def write_markdown(report: MonitoringReport) -> Path:
     out = Path("outputs")
     out.mkdir(exist_ok=True)
@@ -185,6 +190,7 @@ def write_markdown(report: MonitoringReport) -> Path:
 
     p.write_text("".join(lines), encoding="utf-8")
     return p
+
 
 if __name__ == "__main__":
     run_id = env("PIPELINE_RUN_ID", None) or str(uuid.uuid4())

@@ -18,7 +18,10 @@ jobs:
           pip install -r requirements.txt -c constraints.txt
           pip install -r requirements-dev.txt
       - name: Format (black)
-        run: python -m black --check --quiet .
+        run: |
+          # Avoid emoji/noisy output from Black while still enforcing formatting.
+          python -m black --quiet .
+          git diff --name-only --exit-code
       - name: Lint (ruff)
         run: python -m ruff check .
       - name: Typecheck (mypy)
