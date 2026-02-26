@@ -10,7 +10,12 @@ def test_format_freshness_alert_message_no_events():
 def test_write_markdown_handles_none_lag(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     report = {
-        "freshness": {"max_event_ts": None, "lag_hours": None, "threshold_hours": 24.0, "status": "FAIL"},
+        "freshness": {
+            "max_event_ts": None,
+            "lag_hours": None,
+            "threshold_hours": 24.0,
+            "status": "FAIL",
+        },
         "anomaly": [],
         "alerts": [{"type": "freshness", "severity": "high", "message": "x"}],
     }

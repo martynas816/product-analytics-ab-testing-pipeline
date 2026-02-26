@@ -85,14 +85,18 @@ def write_decision() -> Path:
 
     diff, lo, hi = diff_in_proportions_ci(p1, n1, p2, n2)
     rel = (diff / p1) if p1 > 0 else None
-    insufficient = (lo is None or hi is None)
+    insufficient = lo is None or hi is None
 
     # Decision rule: ship if CI lower bound > 0 and guardrail not worse by >2%
     control_aov = float(aov.loc["control", "aov"]) if "control" in aov.index else None
     treat_aov = float(aov.loc["treatment", "aov"]) if "treatment" in aov.index else None
-    aov_change = None if (control_aov is None or treat_aov is None) else (treat_aov - control_aov) / control_aov
+    aov_change = (
+        None
+        if (control_aov is None or treat_aov is None)
+        else (treat_aov - control_aov) / control_aov
+    )
 
-    ship = (False if insufficient else (lo > 0))
+    ship = False if insufficient else (lo > 0)
     if aov_change is not None and aov_change < -0.02:
         ship = False
 
@@ -133,10 +137,14 @@ def write_decision() -> Path:
     elif ship:
         lines.append(" **SHIP** — uplift CI is above 0 and guardrail is acceptable.\n")
     else:
-        lines.append(" **DO NOT SHIP YET** — either CI includes 0 or guardrail regressed beyond tolerance.\n")
+        lines.append(
+            " **DO NOT SHIP YET** — either CI includes 0 or guardrail regressed beyond tolerance.\n"
+        )
 
     lines.append("\n## Notes\n")
-    lines.append("- This decision is computed from tracked events defined in `spec/event_tracking.md`.\n")
+    lines.append(
+        "- This decision is computed from tracked events defined in `spec/event_tracking.md`.\n"
+    )
     lines.append("- For a deeper dive, see `experiment/ab_test_analysis.ipynb`.\n")
 
     p.write_text("".join(lines), encoding="utf-8")

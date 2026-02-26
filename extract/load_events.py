@@ -25,7 +25,8 @@ def load_csv_to_postgres(csv_path: Path) -> int:
 
     with conn.cursor() as cur:
         # Ensure table exists (init.sql should create it, but this makes script robust)
-        cur.execute("""
+        cur.execute(
+            """
         CREATE SCHEMA IF NOT EXISTS raw;
         CREATE TABLE IF NOT EXISTS raw.events (
             event_id         uuid PRIMARY KEY,
@@ -37,13 +38,16 @@ def load_csv_to_postgres(csv_path: Path) -> int:
             experiment_key   text,
             variant          text
         );
-        """)
+        """
+        )
 
         # Load to a temp table first (so we can validate + upsert cleanly)
         cur.execute("DROP TABLE IF EXISTS raw._events_load;")
-        cur.execute("""
+        cur.execute(
+            """
         CREATE TABLE raw._events_load (LIKE raw.events INCLUDING ALL);
-        """)
+        """
+        )
 
         with csv_path.open("r", encoding="utf-8") as f:
             cur.copy_expert(
@@ -55,11 +59,13 @@ def load_csv_to_postgres(csv_path: Path) -> int:
             )
 
         # Insert new rows; ignore duplicates (idempotent demo runs)
-        cur.execute("""
+        cur.execute(
+            """
         INSERT INTO raw.events
         SELECT * FROM raw._events_load
         ON CONFLICT (event_id) DO NOTHING;
-        """)
+        """
+        )
         cur.execute("SELECT COUNT(*) FROM raw._events_load;")
         loaded = cur.fetchone()[0]
 

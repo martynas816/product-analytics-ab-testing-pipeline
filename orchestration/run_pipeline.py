@@ -103,7 +103,15 @@ def main():
                 notes=%s
             WHERE run_id=%s
             """,
-            (ended, status, rows_loaded, max_event_ts, json.dumps(dbt_state) if dbt_state else None, notes, run_id),
+            (
+                ended,
+                status,
+                rows_loaded,
+                max_event_ts,
+                json.dumps(dbt_state) if dbt_state else None,
+                notes,
+                run_id,
+            ),
         )
 
     conn.close()

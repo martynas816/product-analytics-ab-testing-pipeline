@@ -34,7 +34,9 @@ def generate_events():
 @task
 def load_events() -> int:
     # returns rows loaded (from the CSV file, not necessarily inserted if re-run)
-    proc = subprocess.run(["python", "extract/load_events.py"], check=True, capture_output=True, text=True)
+    proc = subprocess.run(
+        ["python", "extract/load_events.py"], check=True, capture_output=True, text=True
+    )
     # naive parse
     out = (proc.stdout or "") + (proc.stderr or "")
     # "Loaded 123 rows into raw.events"
@@ -77,11 +79,18 @@ def dbt_build() -> dict:
 
     return state
 
+
 @task
 def run_monitors(run_id: str) -> dict:
     envs = os.environ.copy()
     envs["PIPELINE_RUN_ID"] = run_id
-    proc = subprocess.run(["python", "monitoring/run_monitors.py"], check=True, capture_output=True, text=True, env=envs)
+    proc = subprocess.run(
+        ["python", "monitoring/run_monitors.py"],
+        check=True,
+        capture_output=True,
+        text=True,
+        env=envs,
+    )
     return {
         "stdout_tail": (proc.stdout or "")[-2000:],
         "stderr_tail": (proc.stderr or "")[-2000:],
@@ -92,6 +101,7 @@ def run_monitors(run_id: str) -> dict:
 @task
 def write_ab_test_decision() -> Path:
     from orchestration.write_ab_decision import write_decision
+
     return write_decision()
 
 

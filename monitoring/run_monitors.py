@@ -47,7 +47,6 @@ def insert_alert(cur, run_id, alert_type, severity, message, details):
     )
 
 
-
 def format_freshness_alert_message(lag_hours: float | None, threshold_hours: float) -> str:
     if lag_hours is None:
         return f"Freshness FAIL: no events found in raw.events (threshold {threshold_hours}h)"
@@ -55,7 +54,9 @@ def format_freshness_alert_message(lag_hours: float | None, threshold_hours: flo
 
 
 def run_monitors(run_id: str) -> dict:
-    freshness_q = "select max(event_ts) as max_event_ts, now() - max(event_ts) as lag from raw.events;"
+    freshness_q = (
+        "select max(event_ts) as max_event_ts, now() - max(event_ts) as lag from raw.events;"
+    )
 
     anomaly_q = """
     with daily as (
@@ -101,7 +102,9 @@ def run_monitors(run_id: str) -> dict:
             "lag_hours": lag_hours,
             "threshold_hours": FRESHNESS_THRESHOLD_HOURS,
         }
-        freshness["status"] = "PASS" if (lag_hours is not None and lag_hours <= FRESHNESS_THRESHOLD_HOURS) else "FAIL"
+        freshness["status"] = (
+            "PASS" if (lag_hours is not None and lag_hours <= FRESHNESS_THRESHOLD_HOURS) else "FAIL"
+        )
         report["freshness"] = freshness
 
         if freshness["status"] == "FAIL":
@@ -124,11 +127,20 @@ def run_monitors(run_id: str) -> dict:
 
             z = r.get("z_score")
             starters = r.get("users_started_checkout") or 0
-            if z is not None and not pd.isna(z) and abs(float(z)) >= Z_THRESHOLD and starters >= 200:
+            if (
+                z is not None
+                and not pd.isna(z)
+                and abs(float(z)) >= Z_THRESHOLD
+                and starters >= 200
+            ):
                 sev = "medium" if abs(float(z)) < 4 else "high"
                 msg = f"Anomaly {sev.upper()}: {r['variant']} conversion z={float(z):.2f} on {r['day']}"
-                insert_alert(cur, run_id, "conversion_anomaly", sev, msg, item | {"z_threshold": Z_THRESHOLD})
-                report["alerts"].append({"type": "conversion_anomaly", "severity": sev, "message": msg})
+                insert_alert(
+                    cur, run_id, "conversion_anomaly", sev, msg, item | {"z_threshold": Z_THRESHOLD}
+                )
+                report["alerts"].append(
+                    {"type": "conversion_anomaly", "severity": sev, "message": msg}
+                )
 
     conn.close()
     return report
@@ -146,7 +158,9 @@ def write_markdown(report: dict) -> Path:
     lines.append(f"Generated: {datetime.now(timezone.utc).isoformat()}\n")
     lines.append("\n## Freshness\n")
     lines.append(f"- Max event timestamp: `{f.get('max_event_ts')}`\n")
-    lines.append(f"- Lag (hours): `{float(f.get('lag_hours') or 0):.2f}` (threshold `{f.get('threshold_hours')}`)\n")
+    lines.append(
+        f"- Lag (hours): `{float(f.get('lag_hours') or 0):.2f}` (threshold `{f.get('threshold_hours')}`)\n"
+    )
     lines.append(f"- Status: **{f.get('status')}**\n")
 
     lines.append("\n## Conversion anomaly (z-score)\n")
