@@ -97,7 +97,6 @@ def generate_events(
             )
 
             # signup funnel happens mostly in first session(s)
-            did_signup = False
             if s == 0 and random.random() < 0.70:
                 add_event(
                     session_ts + timedelta(seconds=random.randint(10, 120)),

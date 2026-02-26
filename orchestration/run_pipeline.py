@@ -5,9 +5,10 @@ import uuid
 import warnings
 from datetime import UTC, datetime
 from pathlib import Path
-from orchestration.flow import daily_pipeline
 
 import psycopg2
+
+from orchestration.flow import daily_pipeline
 
 # Prefect (via SQLAlchemy) can emit a noisy SAWarning about reflecting
 # expression-based indexes. It is safe to ignore for this demo pipeline.
