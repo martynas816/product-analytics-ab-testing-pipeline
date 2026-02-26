@@ -1,9 +1,9 @@
-import warnings
-import os
 import json
-import uuid
+import os
 import traceback
-from datetime import datetime, timezone
+import uuid
+import warnings
+from datetime import UTC, datetime
 from pathlib import Path
 
 import psycopg2
@@ -37,7 +37,7 @@ def connect():
 
 def main():
     run_id = str(uuid.uuid4())
-    started = datetime.now(timezone.utc)
+    started = datetime.now(UTC)
 
     conn = connect()
     conn.autocommit = True
@@ -75,7 +75,7 @@ def main():
         summary = {
             "run_id": run_id,
             "started_at": started.isoformat(),
-            "ended_at": datetime.now(timezone.utc).isoformat(),
+            "ended_at": datetime.now(UTC).isoformat(),
             "rows_loaded_from_csv": rows_loaded,
             "max_event_ts": None if max_event_ts is None else str(max_event_ts),
             "dbt": dbt_state,
@@ -89,7 +89,7 @@ def main():
         notes = traceback.format_exc()[-4000:]
         print(notes)
 
-    ended = datetime.now(timezone.utc)
+    ended = datetime.now(UTC)
 
     with conn.cursor() as cur:
         cur.execute(

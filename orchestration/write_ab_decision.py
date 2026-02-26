@@ -1,7 +1,6 @@
-import os
-import json
 import math
-from datetime import datetime, timezone
+import os
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -106,7 +105,7 @@ def write_decision() -> Path:
 
     lines = []
     lines.append("# A/B test decision — `new_checkout`\n")
-    lines.append(f"Generated: {datetime.now(timezone.utc).isoformat()}\n")
+    lines.append(f"Generated: {datetime.now(UTC).isoformat()}\n")
     lines.append("\n## Primary metric\n")
     lines.append("**Metric:** checkout → purchase conversion within **24h**\n\n")
     lines.append("| variant | checkout users | purchasers | conversion |\n")

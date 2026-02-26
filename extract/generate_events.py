@@ -1,12 +1,11 @@
-import os
 import json
-import uuid
+import os
 import random
-from datetime import datetime, timedelta, timezone
+import uuid
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
-
 
 EVENTS = [
     "app_open",
@@ -20,7 +19,7 @@ EVENTS = [
 
 
 def _now_utc() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def generate_events(

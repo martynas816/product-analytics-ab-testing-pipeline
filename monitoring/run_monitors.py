@@ -1,7 +1,7 @@
-import os
 import json
+import os
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -38,7 +38,7 @@ def insert_alert(cur, run_id, alert_type, severity, message, details):
         (
             str(uuid.uuid4()),
             str(run_id),
-            datetime.now(timezone.utc),
+            datetime.now(UTC),
             alert_type,
             severity,
             message,
@@ -155,7 +155,7 @@ def write_markdown(report: dict) -> Path:
 
     lines = []
     lines.append("# Monitoring report\n")
-    lines.append(f"Generated: {datetime.now(timezone.utc).isoformat()}\n")
+    lines.append(f"Generated: {datetime.now(UTC).isoformat()}\n")
     lines.append("\n## Freshness\n")
     lines.append(f"- Max event timestamp: `{f.get('max_event_ts')}`\n")
     lines.append(
