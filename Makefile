@@ -31,3 +31,22 @@ logs:
 
 psql:
 	docker compose exec -it postgres psql -U analytics -d analytics
+
+
+# Local quality checks (non-Docker)
+lint:
+	python -m ruff check .
+
+format:
+	python -m black .
+
+format-check:
+	python -m black --check .
+
+typecheck:
+	python -m mypy .
+
+test:
+	python -m pytest
+
+quality: format-check lint typecheck test

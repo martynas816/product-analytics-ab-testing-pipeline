@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
-import psycopg2
+from sqlalchemy import create_engine, text
 
 
 def env(name: str, default: str | None = None) -> str:
@@ -15,24 +15,36 @@ def env(name: str, default: str | None = None) -> str:
     return v
 
 
-def connect():
-    return psycopg2.connect(
-        host=env("POSTGRES_HOST", "localhost"),
-        port=int(env("POSTGRES_PORT", "5432")),
-        dbname=env("POSTGRES_DB", "analytics"),
-        user=env("POSTGRES_USER", "analytics"),
-        password=env("POSTGRES_PASSWORD", "analytics"),
-    )
+def get_engine():
+    """SQLAlchemy engine used for pandas read_sql calls.
+
+    Using SQLAlchemy avoids pandas DBAPI warnings and matches typical production patterns.
+    """
+
+    host = env("POSTGRES_HOST", "localhost")
+    port = int(env("POSTGRES_PORT", "5432"))
+    db = env("POSTGRES_DB", "analytics")
+    user = env("POSTGRES_USER", "analytics")
+    password = env("POSTGRES_PASSWORD", "analytics")
+
+    uri = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}"
+    return create_engine(uri, pool_pre_ping=True)
 
 
-def diff_in_proportions_ci(p1, n1, p2, n2, z=1.96):
-    se = math.sqrt(p1*(1-p1)/n1 + p2*(1-p2)/n2)
+def diff_in_proportions_ci(p1: float, n1: int, p2: float, n2: int, z: float = 1.96):
+    """Difference in proportions + Wald CI.
+
+    Returns (diff, lo, hi). If either group has n=0, returns (diff, None, None).
+    """
     diff = p2 - p1
-    return diff, diff - z*se, diff + z*se
+    if n1 <= 0 or n2 <= 0:
+        return diff, None, None
+    se = math.sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)
+    return diff, diff - z * se, diff + z * se
 
 
 def write_decision() -> Path:
-    conn = connect()
+    engine = get_engine()
 
     # Primary metric: checkout -> purchase within 24h (from dbt mart)
     q = """
@@ -45,8 +57,6 @@ def write_decision() -> Path:
     group by 1
     order by 1;
     """
-    df = pd.read_sql(q, conn).set_index("variant")
-
     # Guardrail: average order value
     q_aov = """
     select variant, avg(revenue) as aov, count(*) as orders
@@ -55,9 +65,12 @@ def write_decision() -> Path:
     group by 1
     order by 1;
     """
-    aov = pd.read_sql(q_aov, conn).set_index("variant")
 
-    conn.close()
+    with engine.connect() as conn:
+        df = pd.read_sql(text(q), conn).set_index("variant")
+        aov = pd.read_sql(text(q_aov), conn).set_index("variant")
+
+    engine.dispose()
 
     if "control" not in df.index or "treatment" not in df.index:
         raise RuntimeError("Not enough data for both variants. Run the pipeline first.")
@@ -72,13 +85,14 @@ def write_decision() -> Path:
 
     diff, lo, hi = diff_in_proportions_ci(p1, n1, p2, n2)
     rel = (diff / p1) if p1 > 0 else None
+    insufficient = (lo is None or hi is None)
 
     # Decision rule: ship if CI lower bound > 0 and guardrail not worse by >2%
     control_aov = float(aov.loc["control", "aov"]) if "control" in aov.index else None
     treat_aov = float(aov.loc["treatment", "aov"]) if "treatment" in aov.index else None
     aov_change = None if (control_aov is None or treat_aov is None) else (treat_aov - control_aov) / control_aov
 
-    ship = (lo > 0)
+    ship = (False if insufficient else (lo > 0))
     if aov_change is not None and aov_change < -0.02:
         ship = False
 
@@ -100,7 +114,10 @@ def write_decision() -> Path:
     lines.append(f"- Uplift (abs): **{diff:.4f}**\n")
     if rel is not None:
         lines.append(f"- Uplift (rel): **{rel*100:.2f}%**\n")
-    lines.append(f"- 95% CI (abs): **[{lo:.4f}, {hi:.4f}]**\n")
+    if insufficient:
+        lines.append("- 95% CI (abs): not available (insufficient sample size)\n")
+    else:
+        lines.append(f"- 95% CI (abs): **[{lo:.4f}, {hi:.4f}]**\n")
 
     lines.append("\n## Guardrail\n")
     if aov_change is None:
@@ -111,7 +128,9 @@ def write_decision() -> Path:
         lines.append(f"- AOV change: `{aov_change*100:.2f}%`\n")
 
     lines.append("\n## Decision\n")
-    if ship:
+    if insufficient:
+        lines.append(" **DO NOT SHIP YET** — insufficient sample size to compute a reliable CI.\n")
+    elif ship:
         lines.append(" **SHIP** — uplift CI is above 0 and guardrail is acceptable.\n")
     else:
         lines.append(" **DO NOT SHIP YET** — either CI includes 0 or guardrail regressed beyond tolerance.\n")

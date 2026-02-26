@@ -1,0 +1,13 @@
+{
+  "run_id": "11111111-2222-3333-4444-555555555555",
+  "started_at": "2026-02-26T09:29:00+00:00",
+  "ended_at": "2026-02-26T09:30:25+00:00",
+  "rows_loaded_from_csv": 123456,
+  "max_event_ts": "2026-02-26 09:28:41.123+00:00",
+  "dbt": {
+    "status": "success",
+    "command": "dbt build",
+    "elapsed_s": 38.4
+  },
+  "notes": "See outputs/ab_test_decision.md and outputs/monitoring_report.md"
+}

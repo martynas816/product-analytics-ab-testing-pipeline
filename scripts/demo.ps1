@@ -18,4 +18,6 @@ Write-Host "  docker compose run --rm --entrypoint sh pipeline" -ForegroundColor
 Write-Host "  # then inside: dbt build --project-dir /app/dbt --profiles-dir /app/dbt --debug" -ForegroundColor DarkGray
 
 
-docker compose up --build --abort-on-container-exit
+# Run only the pipeline service (still starts postgres as a dependency),
+# but keeps logs focused on the pipeline output.
+docker compose up --build --abort-on-container-exit pipeline

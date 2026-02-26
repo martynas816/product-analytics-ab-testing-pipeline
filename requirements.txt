@@ -1,5 +1,6 @@
 pandas==2.2.2
 psycopg2-binary==2.9.9
+SQLAlchemy==2.0.34
 python-dotenv==1.0.1
 prefect==2.16.6
 dbt-postgres==1.7.14

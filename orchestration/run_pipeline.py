@@ -1,3 +1,4 @@
+import warnings
 import os
 import json
 import uuid
@@ -6,6 +7,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import psycopg2
+
+# Prefect (via SQLAlchemy) can emit a noisy SAWarning about reflecting
+# expression-based indexes. It is safe to ignore for this demo pipeline.
+warnings.filterwarnings(
+    "ignore",
+    message=r"Skipped unsupported reflection of expression-based index .*",
+)
 
 from orchestration.flow import daily_pipeline
 

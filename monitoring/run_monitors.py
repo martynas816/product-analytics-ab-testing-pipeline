@@ -4,7 +4,6 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-import psycopg2
 import pandas as pd
 
 FRESHNESS_THRESHOLD_HOURS = float(os.getenv("FRESHNESS_THRESHOLD_HOURS", "24"))
@@ -19,6 +18,8 @@ def env(name: str, default: str | None = None) -> str:
 
 
 def connect():
+    import psycopg2
+
     return psycopg2.connect(
         host=env("POSTGRES_HOST", "localhost"),
         port=int(env("POSTGRES_PORT", "5432")),
@@ -44,6 +45,13 @@ def insert_alert(cur, run_id, alert_type, severity, message, details):
             json.dumps(details),
         ),
     )
+
+
+
+def format_freshness_alert_message(lag_hours: float | None, threshold_hours: float) -> str:
+    if lag_hours is None:
+        return f"Freshness FAIL: no events found in raw.events (threshold {threshold_hours}h)"
+    return f"Freshness FAIL: latest event is {lag_hours:.1f}h old (threshold {threshold_hours}h)"
 
 
 def run_monitors(run_id: str) -> dict:
@@ -97,7 +105,7 @@ def run_monitors(run_id: str) -> dict:
         report["freshness"] = freshness
 
         if freshness["status"] == "FAIL":
-            msg = f"Freshness FAIL: latest event is {lag_hours:.1f}h old (threshold {FRESHNESS_THRESHOLD_HOURS}h)"
+            msg = format_freshness_alert_message(lag_hours, FRESHNESS_THRESHOLD_HOURS)
             insert_alert(cur, run_id, "freshness", "high", msg, freshness)
             report["alerts"].append({"type": "freshness", "severity": "high", "message": msg})
 
