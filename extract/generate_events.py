@@ -110,7 +110,6 @@ def generate_events(
 
                 # completion probability
                 if random.random() < 0.80:
-                    did_signup = True
                     add_event(
                         session_ts + timedelta(seconds=random.randint(150, 600)),
                         u,

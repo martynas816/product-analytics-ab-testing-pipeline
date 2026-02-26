@@ -122,7 +122,7 @@ def run_monitors(run_id: str) -> dict:
                 elif hasattr(v, "isoformat"):
                     item[k] = v.isoformat()
                 else:
-                    item[k] = float(v) if isinstance(v, (int, float)) else v
+                    item[k] = float(v) if isinstance(v, int | float) else v
             report["anomaly"].append(item)
 
             z = r.get("z_score")

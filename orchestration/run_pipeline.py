@@ -5,6 +5,7 @@ import uuid
 import warnings
 from datetime import UTC, datetime
 from pathlib import Path
+from orchestration.flow import daily_pipeline
 
 import psycopg2
 
@@ -14,8 +15,6 @@ warnings.filterwarnings(
     "ignore",
     message=r"Skipped unsupported reflection of expression-based index .*",
 )
-
-from orchestration.flow import daily_pipeline
 
 
 def env(name: str, default: str | None = None) -> str:
