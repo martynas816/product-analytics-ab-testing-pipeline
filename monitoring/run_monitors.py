@@ -3,11 +3,17 @@ import os
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any, TypedDict
 
 import pandas as pd
 
 FRESHNESS_THRESHOLD_HOURS = float(os.getenv("FRESHNESS_THRESHOLD_HOURS", "24"))
 Z_THRESHOLD = float(os.getenv("ANOMALY_Z_THRESHOLD", "3.0"))
+
+class MonitoringReport(TypedDict):
+    freshness: dict[str, Any]
+    anomaly: list[dict[str, Any]]
+    alerts: list[dict[str, Any]]
 
 
 def env(name: str, default: str | None = None) -> str:
@@ -28,7 +34,6 @@ def connect():
         password=env("POSTGRES_PASSWORD", "analytics"),
     )
 
-
 def insert_alert(cur, run_id, alert_type, severity, message, details):
     cur.execute(
         """
@@ -46,14 +51,12 @@ def insert_alert(cur, run_id, alert_type, severity, message, details):
         ),
     )
 
-
 def format_freshness_alert_message(lag_hours: float | None, threshold_hours: float) -> str:
     if lag_hours is None:
         return f"Freshness FAIL: no events found in raw.events (threshold {threshold_hours}h)"
     return f"Freshness FAIL: latest event is {lag_hours:.1f}h old (threshold {threshold_hours}h)"
 
-
-def run_monitors(run_id: str) -> dict:
+def run_monitors(run_id: str) -> MonitoringReport:
     freshness_q = (
         "select max(event_ts) as max_event_ts, now() - max(event_ts) as lag from raw.events;"
     )
@@ -88,7 +91,7 @@ def run_monitors(run_id: str) -> dict:
     conn = connect()
     conn.autocommit = True
 
-    report = {"freshness": {}, "anomaly": [], "alerts": []}
+    report: MonitoringReport = {"freshness": {}, "anomaly": [], "alerts": []}
 
     with conn.cursor() as cur:
         # Freshness
@@ -97,7 +100,7 @@ def run_monitors(run_id: str) -> dict:
         lag = df_f.loc[0, "lag"]
         lag_hours = lag.total_seconds() / 3600 if lag is not None else None
 
-        freshness = {
+        freshness: dict[str, Any] = {
             "max_event_ts": None if max_ts is None else str(max_ts),
             "lag_hours": lag_hours,
             "threshold_hours": FRESHNESS_THRESHOLD_HOURS,
@@ -115,7 +118,7 @@ def run_monitors(run_id: str) -> dict:
         # Anomaly
         df_a = pd.read_sql(anomaly_q, conn)
         for _, r in df_a.iterrows():
-            item = {}
+            item: dict[str, Any] = {}
             for k, v in r.to_dict().items():
                 if pd.isna(v):
                     item[k] = None
@@ -145,8 +148,7 @@ def run_monitors(run_id: str) -> dict:
     conn.close()
     return report
 
-
-def write_markdown(report: dict) -> Path:
+def write_markdown(report: MonitoringReport) -> Path:
     out = Path("outputs")
     out.mkdir(exist_ok=True)
     p = out / "monitoring_report.md"
@@ -183,7 +185,6 @@ def write_markdown(report: dict) -> Path:
 
     p.write_text("".join(lines), encoding="utf-8")
     return p
-
 
 if __name__ == "__main__":
     run_id = env("PIPELINE_RUN_ID", None) or str(uuid.uuid4())

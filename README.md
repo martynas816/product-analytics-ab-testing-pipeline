@@ -86,8 +86,8 @@ Synthetic events for an e-commerce style product:
 - Then open `spec/event_tracking.md`
 - Then look at `dbt/models/` and `dbt/models/schema.yml` for tests
 
-## Production considerations (what you’d do next)
-This repo is intentionally **demo-friendly**, but the design mirrors production patterns. To harden this for a real deployment you’d typically add:
+## Production considerations (what I’d do next)
+This repo is intentionally **demo-friendly**, but the design mirrors production patterns. To harden this for a real deployment I’d consider adding:
 - Secret management (no hardcoded passwords), environment-based configs
 - Incremental loading / dedup (idempotent runs)
 - Real alert routing (Slack/email) and dashboards (Metabase/Grafana)

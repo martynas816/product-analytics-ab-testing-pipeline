@@ -18,7 +18,7 @@ jobs:
           pip install -r requirements.txt -c constraints.txt
           pip install -r requirements-dev.txt
       - name: Format (black)
-        run: python -m black --check .
+        run: python -m black --check --quiet .
       - name: Lint (ruff)
         run: python -m ruff check .
       - name: Typecheck (mypy)
