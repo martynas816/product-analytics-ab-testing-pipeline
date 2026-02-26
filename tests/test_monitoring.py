@@ -1,4 +1,4 @@
-from monitoring.run_monitors import format_freshness_alert_message, write_markdown
+from monitoring.run_monitors import MonitoringReport, format_freshness_alert_message, write_markdown
 
 
 def test_format_freshness_alert_message_no_events():
@@ -9,7 +9,7 @@ def test_format_freshness_alert_message_no_events():
 
 def test_write_markdown_handles_none_lag(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    report = {
+    report: MonitoringReport = {
         "freshness": {
             "max_event_ts": None,
             "lag_hours": None,
