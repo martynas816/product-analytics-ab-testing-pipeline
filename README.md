@@ -8,6 +8,8 @@ A small but **production-style** product analytics project that proves:
 - **A/B testing analysis** (uplift + 95% CI + guardrails + decision)
 - **Orchestration + monitoring** (Prefect flow, run logs, freshness + anomaly checks)
 - **Data quality** (dbt tests + business-rule validations)
+- **Stakeholder support playbook** (daily KPI pulse, KPI change drill-down, “promo X numbers”)
+- **Ops incident response example** (triage → root cause → prevention)
 
 ## One-command demo
 Requirements: Docker Desktop
@@ -49,6 +51,9 @@ Outputs appear in `./outputs/`:
 - `experiment/` - optional notebook-style analysis template
 - `orchestration/` - Prefect flow + pipeline entrypoint
 - `monitoring/` - monitors (freshness + anomaly) + runner
+- `docs/job_ads_alignment.md` - evidence map vs common job requirements
+- `docs/support_playbook/` - common stakeholder requests + ready-to-paste response templates
+- `docs/ops/incident_example.md` - incident triage + prevention template (data issue example)
 - `outputs/` - pipeline artifacts (written on every run)
 
 ## Architecture
@@ -70,6 +75,9 @@ flowchart LR
 - `docs/examples/ab_test_decision.md`
 - `docs/examples/monitoring_report.md`
 - `docs/examples/run_summary.json`
+- `docs/job_ads_alignment.md`
+- `docs/support_playbook/01_what_happened_yesterday.md`
+- `docs/ops/incident_example.md`
 
 ## What’s in the data
 Synthetic events for an e-commerce style product:
@@ -81,10 +89,12 @@ Synthetic events for an e-commerce style product:
 - Guardrail: **average order value** (AOV)
 
 ## How to browse quickly
-- Start with `docs/examples/ab_test_decision.md` (committed sample)
-- Then check `docs/examples/monitoring_report.md`
-- Then open `spec/event_tracking.md`
-- Then look at `dbt/models/` and `dbt/models/schema.yml` for tests
+- Start with `docs/job_ads_alignment.md` (quick evidence map)
+- Then open `docs/examples/ab_test_decision.md` (committed sample artifact)
+- Then open `docs/examples/monitoring_report.md`
+- Then skim `docs/support_playbook/01_what_happened_yesterday.md`
+- Then check `spec/event_tracking.md`
+- Finally, open `dbt/models/` and `dbt/models/schema.yml` for models + tests
 
 ## Production considerations (what I’d do next)
 This repo is intentionally **demo-friendly**, but the design mirrors production patterns. To harden this for a real deployment I’d consider adding:
