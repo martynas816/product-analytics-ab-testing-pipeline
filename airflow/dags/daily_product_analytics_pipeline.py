@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime
 
-import pendulum
 from airflow import DAG
 from airflow.operators.bash import BashOperator
+import pendulum
 
 # A demo-friendly DAG that orchestrates the same steps as the Prefect flow.
 # - generate events
