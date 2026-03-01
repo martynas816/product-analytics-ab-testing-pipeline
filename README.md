@@ -51,7 +51,6 @@ Outputs appear in `./outputs/`:
 - `experiment/` - optional notebook-style analysis template
 - `orchestration/` - Prefect flow + pipeline entrypoint
 - `monitoring/` - monitors (freshness + anomaly) + runner
-- `docs/job_ads_alignment.md` - evidence map vs common job requirements
 - `docs/support_playbook/` - common stakeholder requests + ready-to-paste response templates
 - `docs/ops/incident_example.md` - incident triage + prevention template (data issue example)
 - `outputs/` - pipeline artifacts (written on every run)
@@ -89,7 +88,6 @@ Synthetic events for an e-commerce style product:
 - Guardrail: **average order value** (AOV)
 
 ## How to browse quickly
-- Start with `docs/job_ads_alignment.md` (quick evidence map)
 - Then open `docs/examples/ab_test_decision.md` (committed sample artifact)
 - Then open `docs/examples/monitoring_report.md`
 - Then skim `docs/support_playbook/01_what_happened_yesterday.md`
