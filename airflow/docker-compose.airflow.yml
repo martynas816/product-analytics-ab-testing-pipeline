@@ -1,0 +1,42 @@
+# Run Airflow locally to orchestrate the same pipeline steps (in addition to Prefect).
+# Usage:
+#   docker compose -f docker-compose.yml -f airflow/docker-compose.airflow.yml up --build
+# Then open: http://localhost:8080
+# Login: username `admin` (password printed in container logs on first start)
+
+services:
+  airflow:
+    build:
+      context: .
+      dockerfile: airflow/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "False"
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "True"
+
+      # Pipeline DB connection (used by bash tasks + dbt profiles)
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: analytics
+      POSTGRES_USER: analytics
+      POSTGRES_PASSWORD: analytics
+
+      # Keep demo deterministic/fast
+      SYNTH_USERS: "6000"
+      SYNTH_DAYS: "60"
+      RANDOM_SEED: "42"
+
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./:/opt/airflow/repo
+      - ./outputs:/opt/airflow/repo/outputs
+      - airflow_home:/opt/airflow
+    ports:
+      - "8080:8080"
+    command: ["bash", "-lc", "airflow standalone"]
+
+volumes:
+  airflow_home:

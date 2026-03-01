@@ -1,0 +1,6 @@
+# Minimal deps needed to run the pipeline steps inside the Airflow container
+pandas==2.2.2
+psycopg2-binary==2.9.9
+SQLAlchemy==2.0.34
+python-dotenv==1.0.1
+dbt-postgres==1.7.14
