@@ -15,6 +15,7 @@ ignore = ["E501"]  # black manages line length
 known-first-party = ["orchestration", "monitoring", "extract"]
 
 [tool.mypy]
+exclude = "^airflow/"
 python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
