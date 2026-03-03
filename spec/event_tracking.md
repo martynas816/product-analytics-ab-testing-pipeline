@@ -4,7 +4,7 @@ This spec defines **what to track**, **how to name events**, and **how to keep t
 
 ---
 
-## Principles (Ruby Labs-style)
+## Principles
 1. **Stable names, stable meaning**  
 When meaning changes, create a new event name and keep the old one for backwards compatibility.
 2. **Consistent property keys**  
