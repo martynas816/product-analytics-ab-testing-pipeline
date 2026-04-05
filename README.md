@@ -53,7 +53,6 @@ Artifacts are written to `outputs/`:
 - `dbt/` - staging, facts, marts, and tests
 - `orchestration/` - Prefect flow and pipeline runner
 - `monitoring/` - SQL and Python monitoring checks
-- `airflow/` - optional Airflow DAG version of the pipeline
 - `experiment/` - notebook-based analysis
 - `docs/examples/` - committed sample outputs
 
